@@ -29,5 +29,6 @@
 
 	<script src="//code.jquery.com/jquery.js"></script>
 	{{HTML::script('assets/js/bootstrap.min.js')}}
+	{{HTML::script('js/validaciones.js');}}
 </body>
 </html>

@@ -12,5 +12,8 @@
 */
 
 
-Route::get('/', 'MainController@index');
+Route::resource('/', 'MainController');
+
+
+
 

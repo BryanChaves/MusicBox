@@ -1,5 +1,11 @@
 <?php
 
+require_once( '/home/BRYAN19/MusicBox/worker/vendor/autoload.php');
+
+use PhpAmqpLib\Connection\AMQPConnection; 
+use PhpAmqpLib\Message\AMQPMessage;
+
+
 class MainController extends \BaseController {
 
 	
@@ -23,14 +29,54 @@ class MainController extends \BaseController {
 	}
 
 
-	/**
+	/**k
 	 * Store a newly created resource in storage.
 	 *
 	 * @return Response
 	 */
 	public function store()
 	{
-		//
+
+		$archivo = Input::file('origenArchivo');
+ 		$forma  = Input::get('forma');
+ 		$cantidad = Input::get('cantidad');
+ 		$rutaArchivo_subido="/home/BRYAN19/MusicBox/Subidos";
+ 		
+ 		$nombre = $archivo->getClientOriginalName();
+
+ 			$informacionArchivo = pathinfo($nombre);
+		$extension  = $informacionArchivo['extension']; 		
+ 		
+ 		$rutaCompleta =$rutaArchivo_subido.'/'.$nombre;
+
+ 		$cola = new Cola();	
+
+//if (($extension == "mp3")||($extension == "wav")||($extension == "ogg")||($extension == "wma")||($extension == "mka")) {
+	$subido = $archivo->move($rutaArchivo_subido, $nombre);
+
+		 		if ($forma=="parts") {
+		 			$cola->file = $rutaCompleta;
+					$cola->parts = $cantidad;
+					$cola->time_per_chunk = "";
+					$cola->save();
+					$this->cola(json_encode($rutaCompleta),$cola->id);
+					return Redirect::to('/');
+		 		}else{
+		 			if ($forma=="minutes") {
+		 				
+		 				$cola->file = $rutaCompleta;
+						$cola->parts = 0;
+						$cola->time_per_chunk = $cantidad;
+						$cola->save();
+						$this->cola(json_encode($cola),$cola->id);
+						return Redirect::to('/');			
+		 			}
+		 		}
+ 			
+ 		//}else{
+ 			//return Response::json("formato invalido");
+ 		//}
+
 	}
 
 
@@ -80,6 +126,18 @@ class MainController extends \BaseController {
 	{
 		//
 	}
+
+	public function cola($cola,$id){
+		$connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
+		$channel = $connection->channel();
+		$channel->queue_declare($id, false, false, false, false);
+		
+		$msg = new AMQPMessage($cola);
+		$channel->basic_publish($msg, '', $id);
+		$channel->close();
+		$connection->close();
+	}
+
 
 
 }
