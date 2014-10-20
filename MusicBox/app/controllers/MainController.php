@@ -43,23 +43,31 @@ class MainController extends \BaseController {
  		$rutaArchivo_subido="/home/BRYAN19/MusicBox/Subidos";
  		
  		$nombre = $archivo->getClientOriginalName();
+ 		$nuevoNombre=$this->limpia_espacios($nombre);
 
- 			$informacionArchivo = pathinfo($nombre);
-		$extension  = $informacionArchivo['extension']; 		
+ 			//$informacionArchivo = pathinfo($nombre);
+		//$extension  = $informacionArchivo['extension']; 		
  		
- 		$rutaCompleta =$rutaArchivo_subido.'/'.$nombre;
+ 		$rutaCompleta =$rutaArchivo_subido.'/'.$nuevoNombre;
 
  		$cola = new Cola();	
 
 //if (($extension == "mp3")||($extension == "wav")||($extension == "ogg")||($extension == "wma")||($extension == "mka")) {
-	$subido = $archivo->move($rutaArchivo_subido, $nombre);
+	$subido = $archivo->move($rutaArchivo_subido, $nuevoNombre);
 
 		 		if ($forma=="parts") {
 		 			$cola->file = $rutaCompleta;
 					$cola->parts = $cantidad;
 					$cola->time_per_chunk = "";
 					$cola->save();
-					$this->cola(json_encode($rutaCompleta),$cola->id);
+					$id=$cola->id;
+					$file=$rutaCompleta;
+					$parts=$cantidad;
+					$time_per_chunk="";
+
+
+					$formatoJason=array('id'=>"$id",'file'=>"$file",'parts'=>"$parts",'time_per_chunk'=>"$time_per_chunk");
+					$this->cola(json_encode($formatoJason));
 					return Redirect::to('/');
 		 		}else{
 		 			if ($forma=="minutes") {
@@ -68,13 +76,21 @@ class MainController extends \BaseController {
 						$cola->parts = 0;
 						$cola->time_per_chunk = $cantidad;
 						$cola->save();
-						$this->cola(json_encode($cola),$cola->id);
+
+						$id=$cola->id;
+						$file=$rutaCompleta;
+						$parts=0;
+						$time_per_chunk=$cantidad;
+
+						$formatoJason=array('id'=>"$id",'file'=>"$file",'parts'=>"$parts",'time_per_chunk'=>"$time_per_chunk");
+						$this->cola(json_encode($formatoJason));
+						
 						return Redirect::to('/');			
 		 			}
 		 		}
  			
  		//}else{
- 			//return Response::json("formato invalido");
+ 			//return Response::json(s"formato invalido");
  		//}
 
 	}
@@ -86,6 +102,12 @@ class MainController extends \BaseController {
 	 * @param  int  $id
 	 * @return Response
 	 */
+	public function limpia_espacios($cadena){
+    $cadena = str_replace(' ', '', $cadena);
+    return $cadena;
+	}
+
+
 	public function show($id)
 	{
 		//
@@ -127,13 +149,13 @@ class MainController extends \BaseController {
 		//
 	}
 
-	public function cola($cola,$id){
+	public function cola($cola){
 		$connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
 		$channel = $connection->channel();
-		$channel->queue_declare($id, false, false, false, false);
+		$channel->queue_declare('hola', false, false, false, false);
 		
 		$msg = new AMQPMessage($cola);
-		$channel->basic_publish($msg, '', $id);
+		$channel->basic_publish($msg, '', 'hola');
 		$channel->close();
 		$connection->close();
 	}
