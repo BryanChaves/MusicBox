@@ -47,7 +47,9 @@ class MainController extends \BaseController {
 
  		//$informacionArchivo = pathinfo($nombre);
 		//$extension  = $informacionArchivo['extension']; 		
+ 		
  		$rutaCompleta =$rutaArchivo_subido.'/'.$nuevoNombre;
+
  		$cola = new Cola();	
 
 //if (($extension == "mp3")||($extension == "wav")||($extension == "ogg")||($extension == "wma")||($extension == "mka")) {
@@ -62,6 +64,7 @@ class MainController extends \BaseController {
 					$file=$rutaCompleta;
 					$parts=$cantidad;
 					$time_per_chunk="";
+
 
 					$formatoJason=array('id'=>"$id",'file'=>"$file",'parts'=>"$parts",'time_per_chunk'=>"$time_per_chunk");
 					$this->cola(json_encode($formatoJason));
@@ -89,7 +92,10 @@ class MainController extends \BaseController {
  		//}else{
  			//return Response::json(s"formato invalido");
  		//}
+
 	}
+
+
 	/**
 	 * Display the specified resource.
 	 *
@@ -97,8 +103,8 @@ class MainController extends \BaseController {
 	 * @return Response
 	 */
 	public function limpia_espacios($cadena){
-    	$cadena = str_replace(' ', '', $cadena);
-    	return $cadena;
+    $cadena = str_replace(' ', '', $cadena);
+    return $cadena;
 	}
 
 

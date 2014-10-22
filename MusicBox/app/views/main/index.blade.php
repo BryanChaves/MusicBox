@@ -7,7 +7,7 @@
 <select id="Opcion">
   <option value="parts">Parts</option>
   <option value="minutes">Minutes</option>
-  <option value="seconds">Seconds</option>
+  
  </select><br>
 <input id="cantidad" type="number" value="0" min="0" max="60" /><br>
 
